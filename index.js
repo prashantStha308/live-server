@@ -110,8 +110,10 @@ async function handleDir(pathToFile){
 
     if (stat.isFile()) {
 
-        if (path.basename(pathToFile) !== 'index.html') {
-            console.log("The file must be index.html");
+    	const htmlRegex = /^.+\.html?$/
+
+        if ( !htmlRegex.test(path.basename(pathToFile)) ) {
+            console.log("The file must be an HTML file");
             process.exit(1);
         }
 
