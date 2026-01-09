@@ -15,13 +15,23 @@ let pathToFile = argv.path;
 let clients = []
 
 // Keeps an eye on the file
-function watchFile(filePath) {
-    fs.watch(filePath, () => {
+function watchFile(rootDir) {
+    fs.watch(rootDir, { recursive: true }, (eventType, filename) => {
+        if (!filename) return;
+
+        const fileRegex = /\.(html?|css|js)$/i;
+
+        // only reload for frontend files
+        if (!fileRegex.test(filename)) return;
+
+        console.log("Change detected:", filename);
+
         clients.forEach(res => {
             res.write('data: reload\n\n');
         });
     });
 }
+
 
 // Path for SSE(Server Side Event) Connection.
 app.get('/live', (req, res, next)=>{
@@ -44,8 +54,12 @@ async function serveWithInjection(res, filePath){
 
 	const injection = `
 	<script>
-		const event = new EventSource('/live');
-		event.onmessage = ()=> location.reload();
+		const event = new EventSource('http://localhost:${PORT}/live');
+		event.onmessage = ()=> {
+			console.log("message received");
+			location.reload()
+
+		};
 	</script>
 	`;
 
@@ -57,9 +71,13 @@ async function serveWithInjection(res, filePath){
 
 function startServer(finalPath){
 
-	watchFile(finalPath);
+	const rootDir = path.dirname(finalPath);
+
+	watchFile(rootDir);
 
 	app.get('/', async (req, res) => await serveWithInjection(res, finalPath ) )
+
+	app.use(express.static(rootDir));
 
 	app.listen(PORT,()=>{
 		console.log(`Server running in port ${PORT}`);
