@@ -6,5 +6,6 @@
 ```
 
 ### Note:
-Unless you provide the *.html file name, this script will search for index.html, and will fail if no index.html is found. This is also currently likited to watching just one file.
+Unless you provide the *.html file name, this script will search for index.html, and will fail if no index.html is found. This is also currently limited 
+to watching just one file.
 
